@@ -26,7 +26,6 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         super().__init__()
         self._original_image = None
         self._edited_image = None
-        self._pixmap = None
         self._without_rotation_image = None
         self._anlge = 0
         self._scale_factor = 1.0
@@ -63,11 +62,11 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def open_file(self):       
         file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Выберите файл с изображением' , filter="Images (*.png *.jpg *.jpeg *.bmp *.gif *.gif *.cur *.ico)")[0]       
         if file_path:
-            self._pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(file_path))
-            self._original_image = ImageQt.fromqpixmap(self._pixmap)
+            pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(file_path))
+            self._original_image = ImageQt.fromqpixmap(pixmap)
             self._edited_image = self._original_image.copy()
-            self.photo.setPixmap(self._pixmap)
-            self.photo.resize(self._pixmap.width() , self._pixmap.height())
+            self.photo.setPixmap(pixmap)
+            self.photo.resize(pixmap.width() , pixmap.height())
             self.enable_elements()
             self.reset_values()
               
@@ -85,7 +84,7 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.reset_values(fit = True)
         else:
             self.scrollArea.setWidgetResizable(False)
-            self.photo.resize(self._pixmap.width() , self._pixmap.height())
+            self.photo.resize(self.photo.pixmap().width() , self.photo.pixmap().height())
             self.reset_values()
             pass
         #update_pixmap()
@@ -161,7 +160,7 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             #qdialog?
 
     def scale(self, factor):
-        self.photo.resize(factor * self._pixmap.width() , factor *self._pixmap.height())
+        self.photo.resize(factor * self.photo.pixmap().width() , factor *self.photo.pixmap().height())
         self.change_percentage(factor)
 
     def zoom_in(self):
@@ -208,9 +207,9 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.percentage.setText(str(int(factor * 100)) + "%")
 
     def update_pixmap(self):
-        self._pixmap = ImageQt.toqpixmap(self._edited_image)
-        self.photo.setPixmap(self._pixmap)
-        self.photo.resize(self._pixmap.width() , self._pixmap.height())
+        pixmap = ImageQt.toqpixmap(self._edited_image)
+        self.photo.setPixmap(pixmap)
+        self.photo.resize(pixmap.width() , pixmap.height())
         
 
     def disable_elements(self):
