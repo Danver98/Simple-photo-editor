@@ -93,6 +93,8 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def reset(self):
         self._edited_image = self._original_image.copy()
         self.update_pixmap()
+        self._scale_factor = 1.0
+        self.change_percentage(self._scale_factor)
 
     def plot_histogram(self):
         value = helper.histogram(self._edited_image)
@@ -211,7 +213,6 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self._pixmap = ImageQt.toqpixmap(self._edited_image)
         self.photo.setPixmap(self._pixmap)
         self.photo.resize(self._pixmap.width() , self._pixmap.height())
-        
 
     def disable_elements(self):
         pass
