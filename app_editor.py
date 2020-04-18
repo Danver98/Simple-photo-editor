@@ -26,7 +26,7 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         super().__init__()
         self._original_image = None
         self._edited_image = None
-        self._without_rotation_image = None
+        self._image_without_rotation = None
         self._anlge = 0
         self._scale_factor = 1.0
         self._scale_factor_step = 0.25
@@ -89,8 +89,11 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             pass
         #update_pixmap()
 
+    # reset filters and transforms with scale
     def reset(self):
         self._edited_image = self._original_image.copy()
+        self._scale_factor = 1.0
+        self.change_percentage(self._scale_factor)
         self.update_pixmap()
 
     def plot_histogram(self):
@@ -179,6 +182,21 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.btnZoomOut.setDisabled(True)
         self.scale(self._scale_factor)
 
+    def rotate(self , angle):
+        self._angle = (self._angle + angle) % 360
+        if self._angle == 0:
+            # загрузить все применённые стили + исходное без поворотов и обрезов
+            pass
+        elif self._angle == 180:
+            # повернули исходное сразу на 180
+            # загрузить все применённые стили + исходное без обрезов
+            pass
+        else:
+            # сохранили изображение в исходном со стилями и другими трансофрмациями
+            # 
+            pass
+        #update_pixmap() ?
+
     def rotate_to_the_left(self):
         angle = 90
         self._edited_image = helper.rotate(self._edited_image , angle)
@@ -209,9 +227,9 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def update_pixmap(self):
         pixmap = ImageQt.toqpixmap(self._edited_image)
         self.photo.setPixmap(pixmap)
-        self.photo.resize(pixmap.width() , pixmap.height())
+        #self.photo.resize(pixmap.width(), pixmap.height())
+        self.photo.resize(self._scale_factor*pixmap.width() , self._scale_factor*pixmap.height())
         
-
     def disable_elements(self):
         pass
     
