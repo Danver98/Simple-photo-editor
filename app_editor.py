@@ -12,12 +12,6 @@ import matplotlib.pyplot as plt
 # image sizes don't persist
 #
 # ==========================
-#
-# Deal with scaling at fit_to_window mode
-#
-# ==========================
-#
-# Add reset button for transform/rotating/scaling operations?
 
 
 # original_image and edited_image are instances of class ImageQt/ Image
@@ -26,9 +20,8 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         super().__init__()
         self._original_image = None
         self._edited_image = None
-        self._pixmap = None
-        self._without_rotation_image = None
-        self._anlge = 0
+        self._image_without_rotation = None
+        self._angle = 0
         self._scale_factor = 1.0
         self._scale_factor_step = 0.25
         self._scale_factor_upper_bound = 3.0
@@ -63,11 +56,11 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def open_file(self):       
         file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Выберите файл с изображением' , filter="Images (*.png *.jpg *.jpeg *.bmp *.gif *.gif *.cur *.ico)")[0]       
         if file_path:
-            self._pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(file_path))
-            self._original_image = ImageQt.fromqpixmap(self._pixmap)
+            pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(file_path))
+            self._original_image = ImageQt.fromqpixmap(pixmap)
             self._edited_image = self._original_image.copy()
-            self.photo.setPixmap(self._pixmap)
-            self.photo.resize(self._pixmap.width() , self._pixmap.height())
+            self.photo.setPixmap(pixmap)
+            self.photo.resize(pixmap.width() , pixmap.height())
             self.enable_elements()
             self.reset_values()
               
@@ -77,7 +70,10 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         file_path = QtWidgets.QFileDialog.getSaveFileName(self,'Сохранить файл с изображением' , filter="Images (*.png *.jpg *.jpeg *.bmp *.gif *.gif *.cur *.ico)")[0]
         if file_path:    
             #self._original_image.save(file_path)
-            self._edited_image.save(file_path)
+            if self._angle:
+                self.get_rotated_image(self._angle).save(file_path)
+            else:
+                self._edited_image.save(file_path)
 
     def fit_to_window_size(self):
         if(self.checkBoxFitToWindowSize.isChecked()):
@@ -85,13 +81,17 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.reset_values(fit = True)
         else:
             self.scrollArea.setWidgetResizable(False)
-            self.photo.resize(self._pixmap.width() , self._pixmap.height())
+            self.photo.resize(self.photo.pixmap().width() , self.photo.pixmap().height())
             self.reset_values()
             pass
         #update_pixmap()
 
+    # reset filters and transforms with scale
     def reset(self):
         self._edited_image = self._original_image.copy()
+        self._scale_factor = 1.0
+        self._angle = 0
+        self.change_percentage(self._scale_factor)
         self.update_pixmap()
         self._scale_factor = 1.0
         self.change_percentage(self._scale_factor)
@@ -163,7 +163,7 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             #qdialog?
 
     def scale(self, factor):
-        self.photo.resize(factor * self._pixmap.width() , factor *self._pixmap.height())
+        self.photo.resize(factor * self.photo.pixmap().width() , factor *self.photo.pixmap().height())
         self.change_percentage(factor)
 
     def zoom_in(self):
@@ -182,14 +182,23 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.btnZoomOut.setDisabled(True)
         self.scale(self._scale_factor)
 
+    def get_rotated_image(self, angle): 
+        # изображение поворачивается из исходной позиции
+        if self._angle == 90:
+            return helper.transpose(self._edited_image , Image.ROTATE_90)
+        elif self._angle == 180:
+            return helper.transpose(self._edited_image , Image.ROTATE_180)
+        elif self._angle == 270:
+            return helper.transpose(self._edited_image , Image.ROTATE_270)
+
     def rotate_to_the_left(self):
-        angle = 90
-        self._edited_image = helper.rotate(self._edited_image , angle)
+        self._angle = (self._angle + 90) % 360
+        #self._edited_image = self.rotate()
         self.update_pixmap()
     
     def rotate_to_the_right(self):
-        angle = -90
-        self._edited_image = helper.rotate(self._edited_image , angle)
+        self._angle = (self._angle - 90) % 360
+        #self._edited_image = self.rotate()
         self.update_pixmap()
 
     def on_change_height_size(self):
@@ -210,10 +219,21 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.percentage.setText(str(int(factor * 100)) + "%")
 
     def update_pixmap(self):
+<<<<<<< HEAD
         self._pixmap = ImageQt.toqpixmap(self._edited_image)
         self.photo.setPixmap(self._pixmap)
         self.photo.resize(self._pixmap.width() , self._pixmap.height())
 
+=======
+        if(self._angle):
+            pixmap = ImageQt.toqpixmap(self.get_rotated_image(self._angle))
+        else:
+            pixmap = ImageQt.toqpixmap(self._edited_image)
+        self.photo.setPixmap(pixmap)
+        #self.photo.resize(pixmap.width(), pixmap.height())
+        self.photo.resize(self._scale_factor*pixmap.width() , self._scale_factor*pixmap.height())
+  
+>>>>>>> dev
     def disable_elements(self):
         pass
     

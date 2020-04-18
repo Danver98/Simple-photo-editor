@@ -33,6 +33,9 @@ def histogram(image):
     except ValueError as e:
         return -1
 
+def transpose(image , method):
+    return image.transpose(method)
+
 def rotate(image , angle):
     return image.rotate(angle)
 
@@ -113,10 +116,9 @@ self.menuFilters.setEnabled(False)
         self.btnResize.setEnabled(False)
         self.checkBoxAutoRatio.setEnabled(False)
 """
-"""
+
 if __name__ =='__main__':
     default = "C:/Users/Супемэн/Desktop/2005.09.09-8.JPG"
-    #image = Image.open(default)
-    #image.rotate(90).show()
+    image = Image.open(default)
+    image.transpose(Image.ROTATE_270).show()
     #image.rotate(180).show()
-"""
